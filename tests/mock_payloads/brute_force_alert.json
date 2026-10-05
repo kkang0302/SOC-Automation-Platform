@@ -1,0 +1,11 @@
+{
+  "search_name": "Suricata - SSH Brute Force Attempt",
+  "severity": "high",
+  "result": {
+    "src_ip": "185.220.101.5",
+    "dest_ip": "192.168.1.50",
+    "user": "root",
+    "signature": "ET SCAN Potential SSH Scan",
+    "failed_attempts": 24
+  }
+}
