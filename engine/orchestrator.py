@@ -4,7 +4,7 @@ from enrichment.abuseipdb import check_ip_abuseipdb
 from enrichment.virustotal import check_hash_virustotal
 from enrichment.otx import check_ip_otx
 from engine.risk_score import calculate_risk_score
-from actions.notifier import send_discord_alert, send_slack_alert
+from actions.notifier import send_discord_alert
 from actions.firewall_block import block_ip_firewall
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ def process_alert(raw_payload):
     1. Parse raw SIEM alert
     2. Enrich IOCs (IP/Hash) with Threat Intelligence
     3. Compute Risk Score & Verdict
-    4. Dispatch notifications (Discord/Slack)
+    4. Dispatch notifications (Discord)
     5. Trigger active firewall response for High/Critical threats
     """
     logger.info("================== [PROCESSING NEW ALERT] ==================")
@@ -38,8 +38,7 @@ def process_alert(raw_payload):
 
     # 4. Dispatch Notifications
     discord_ok, discord_msg = send_discord_alert(parsed, risk, abuse_info)
-    slack_ok, slack_msg = send_slack_alert(parsed, risk, abuse_info)
-    logger.info(f"Notification Status: Discord={discord_msg} | Slack={slack_msg}")
+    logger.info(f"Notification Status: Discord={discord_msg}")
 
     # 5. Active Mitigation Response (Automated Containment)
     mitigation_status = "Skipped (Risk below containment threshold)"
@@ -60,8 +59,7 @@ def process_alert(raw_payload):
         },
         "risk_evaluation": risk,
         "notifications": {
-            "discord": discord_msg,
-            "slack": slack_msg
+            "discord": discord_msg
         },
         "mitigation": mitigation_status
     }

@@ -12,7 +12,6 @@ class Config:
 
     # Webhooks
     DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK_URL", "")
-    SLACK_WEBHOOK = os.getenv("SLACK_WEBHOOK_URL", "")
 
     # Thresholds
     RISK_HIGH = int(os.getenv("RISK_THRESHOLD_HIGH", 50))

@@ -16,7 +16,7 @@
 │  1. Ingest Webhook Alert ──> 2. Parse & Normalize Schema                     │
 │  3. Threat Intelligence Enrichment (AbuseIPDB, VirusTotal, AlienVault OTX)    │
 │  4. Compute Risk Verdict Engine (LOW, MEDIUM, HIGH, CRITICAL)               │
-│  5. Dispatch Rich Discord / Slack Notification Cards                         │
+│  5. Dispatch Rich Discord Notification Cards                                 │
 │  6. Active Firewall Response (Automated IP Containment via iptables)        │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -31,7 +31,7 @@
   * **VirusTotal API v3**: File hash analysis and engine detection counts.
   * **AlienVault OTX API**: Indicator pulse associations and threat tags.
 * **Risk Scoring & Decision Engine**: Evaluates Threat Intel metadata + SIEM baseline severity to produce an actionable verdict (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`).
-* **Rich Notification Dispatch**: Beautiful embedded alert cards to Discord and Slack webhooks.
+* **Rich Notification Dispatch**: Beautiful embedded alert cards to Discord webhooks.
 * **Automated Containment Playbook**: Native active firewall response (`iptables` / `netsh`) for high-risk threats.
 
 ---
