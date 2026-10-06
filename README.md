@@ -42,6 +42,20 @@
 
 ---
 
+## 🎯 Supported Attack Detections & MITRE ATT&CK Mapping
+
+The platform automatically detects, enriches, and mitigates the following attack vectors:
+
+| Attack Vector | MITRE ATT&CK Technique | Detection Source | Threat Intel Engine | Automated SOAR Response |
+| :--- | :--- | :--- | :--- | :--- |
+| **SSH / Credential Brute-Force** | `T1110` - Brute Force | Linux Auth Logs / Sysmon | AbuseIPDB API v2 | 🚨 Discord Card + 🚫 **Auto Block IP (`iptables`)** |
+| **Network Recon & Port Scan** | `T1595` / `T1046` Active Scan | Suricata NIDS / Nmap Logs | AlienVault OTX API | 🚨 Discord Card + 🚫 **Auto Block IP (`iptables`)** |
+| **Malware & Suspicious Executable** | `T1204` User Execution | Sysmon Event ID 1 / 11 | VirusTotal API v3 | 🚨 Discord Card + 🏷️ **Malware Verdict Tag** |
+| **Malicious / C2 IP Traffic** | `T1071` Application Protocol | Web Server / Firewall Logs | AbuseIPDB + OTX | 🚨 Discord Card + 🚫 **Auto Block IP (`iptables`)** |
+| **Web Exploits (SQLi, Directory Traversal)** | `T1190` Exploit Public App | Apache / Suricata HTTP Logs | AbuseIPDB API v2 | 🚨 Discord Card + 📄 **Raw Log Context Snippet** |
+
+---
+
 ## 🛠️ Environment Setup & Installation
 
 ### 1. Clone Repository & Setup Virtual Environment
