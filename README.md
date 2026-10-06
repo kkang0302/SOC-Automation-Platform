@@ -56,14 +56,18 @@ cp .env.example .env
 nano .env
 ```
 
-### 3. Run Webhook Server
+### 3. Run Webhook Server OR Splunk Free Poller
+
+**Option A: Webhook Mode (For Splunk Enterprise / Developer License)**
 ```bash
 python3 server.py
 ```
-Server starts on `http://0.0.0.0:5000`. Test health status:
+
+**Option B: Poller Mode (100% Compatible with Splunk Free License)**
 ```bash
-curl http://127.0.0.1:5000/health
+python3 pollers/splunk_poller.py
 ```
+*(Poller will automatically query Splunk Free REST API every 10 seconds for new attack logs!)*
 
 ---
 
