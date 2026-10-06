@@ -1,3 +1,9 @@
+import sys
+import os
+
+# Automatically append project root directory to sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import time
 import logging
 import requests
