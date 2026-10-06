@@ -18,8 +18,12 @@ def send_discord_alert(parsed_alert, risk_result, abuse_data=None):
     verdict = risk_result.get("verdict", "UNKNOWN")
     score = risk_result.get("risk_score", 0)
 
+    title_text = parsed_alert.get('search_name', 'Security Event')
+    if len(title_text) > 80:
+        title_text = title_text[:77] + "..."
+
     embed = {
-        "title": f"🚨 SOC ALERT: {parsed_alert.get('search_name', 'Security Event')}",
+        "title": f"🚨 SOC ALERT: {title_text}",
         "color": color_map.get(verdict, 3447003),
         "fields": [
             {
@@ -48,6 +52,16 @@ def send_discord_alert(parsed_alert, risk_result, abuse_data=None):
         }
     }
 
+    # Add Raw Event Context from Splunk
+    raw_log = parsed_alert.get("raw_log")
+    if raw_log and raw_log != "N/A":
+        embed["fields"].append({
+            "name": "Splunk Raw Log Context",
+            "value": f"```text\n{raw_log[:220]}\n```",
+            "inline": False
+        })
+
+    # Add AbuseIPDB Context if available
     if abuse_data and isinstance(abuse_data, dict) and abuse_data.get("isp") != "N/A":
         embed["fields"].append({
             "name": "AbuseIPDB Threat Context",
@@ -61,4 +75,3 @@ def send_discord_alert(parsed_alert, risk_result, abuse_data=None):
         return res.status_code in [200, 204], f"HTTP {res.status_code}"
     except Exception as e:
         return False, str(e)
-

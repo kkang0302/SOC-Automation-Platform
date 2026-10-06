@@ -15,7 +15,7 @@ def process_alert(raw_payload):
     1. Parse raw SIEM alert
     2. Enrich IOCs (IP/Hash) with Threat Intelligence
     3. Compute Risk Score & Verdict
-    4. Dispatch notifications (Discord)
+    4. Dispatch notifications (Discord) for actionable threats (Noise filtering applied)
     5. Trigger active firewall response for High/Critical threats
     """
     logger.info("================== [PROCESSING NEW ALERT] ==================")
@@ -36,9 +36,13 @@ def process_alert(raw_payload):
     risk = calculate_risk_score(parsed, abuse_info, vt_info, otx_info)
     logger.info(f"Risk Evaluation Result: Verdict={risk['verdict']} | Score={risk['risk_score']}/100")
 
-    # 4. Dispatch Notifications
-    discord_ok, discord_msg = send_discord_alert(parsed, risk, abuse_info)
-    logger.info(f"Notification Status: Discord={discord_msg}")
+    # 4. Dispatch Notifications (Noise Reduction Rule: Skip LOW verdict events with no IOCs)
+    discord_msg = "Skipped (Low risk noise event suppressed)"
+    if risk["verdict"] in ["MEDIUM", "HIGH", "CRITICAL"] or src_ip or file_hash:
+        discord_ok, discord_msg = send_discord_alert(parsed, risk, abuse_info)
+        logger.info(f"Notification Status: Discord={discord_msg}")
+    else:
+        logger.info("Notification Status: Skipped (LOW verdict baseline noise without actionable IOCs)")
 
     # 5. Active Mitigation Response (Automated Containment)
     mitigation_status = "Skipped (Risk below containment threshold)"

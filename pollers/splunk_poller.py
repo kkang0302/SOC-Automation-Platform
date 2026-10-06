@@ -20,8 +20,8 @@ SPLUNK_HOST = "https://127.0.0.1:8089"  # Splunk Management Port
 SPLUNK_USER = "admin"
 SPLUNK_PASS = "Kkanger2.0"
 
-# SPL Search Query để quét log tấn công trong 1 phút qua
-SEARCH_QUERY = 'search index=* ("Failed password" OR "Suricata" OR "DROP" OR "SCAN" OR "invalid user") | head 5'
+# SPL Search Query để quét log tấn công (Failed SSH logins, Suricata Alerts, Port Scans, Nmap)
+SEARCH_QUERY = 'search index=* ("Failed password" OR "Suricata" OR "DROP" OR "SCAN" OR "invalid user" OR "Nmap" OR "nmap") | head 10'
 
 def poll_splunk_alerts():
     """
@@ -30,13 +30,12 @@ def poll_splunk_alerts():
     """
     logger.info("[POLLER] Starting Splunk Free REST API Poller Daemon...")
     
-    # Endpoint export kết quả search trực tiếp dưới dạng JSON
     url = f"{SPLUNK_HOST}/servicesNS/admin/search/search/jobs/export"
     
     payload = {
         "search": SEARCH_QUERY,
         "output_mode": "json",
-        "earliest_time": "-1m@m",
+        "earliest_time": "-2m@m",
         "latest_time": "now"
     }
 
@@ -53,7 +52,6 @@ def poll_splunk_alerts():
             )
 
             if response.status_code == 200:
-                # Splunk export json format (mỗi dòng 1 json object)
                 lines = response.text.strip().split("\n")
                 for line in lines:
                     if not line:
@@ -63,15 +61,15 @@ def poll_splunk_alerts():
                         data = json.loads(line)
                         result = data.get("result", {})
                         
-                        # Tạo unique hash cho event để tránh xử lý lặp
                         event_id = result.get("_cd") or result.get("_raw")
                         if event_id and event_id not in seen_event_ids:
                             seen_event_ids.add(event_id)
-                            logger.info(f"[POLLER] New attack log detected from Splunk Free: {result.get('_raw', '')[:100]}...")
+                            raw_str = result.get("_raw", "")
+                            sourcetype = result.get("sourcetype") or "Splunk Log"
+                            logger.info(f"[POLLER] New event detected from Splunk Free ({sourcetype}): {raw_str[:80]}...")
                             
-                            # Đưa vào Orchestrator Pipeline xử lý
                             mock_payload = {
-                                "search_name": "Splunk Free Auto-Polled Event",
+                                "search_name": f"Splunk Free: {sourcetype}",
                                 "severity": "high",
                                 "result": result
                             }
@@ -79,14 +77,13 @@ def poll_splunk_alerts():
                     except Exception as parse_err:
                         continue
 
-            # Giới hạn kích thước cache ID
             if len(seen_event_ids) > 1000:
                 seen_event_ids.clear()
 
         except Exception as e:
             logger.error(f"[POLLER ERROR] Failed to connect to Splunk REST API: {e}")
 
-        # Quét lại sau mỗi 10 giây
+        # Poll every 10 seconds
         time.sleep(10)
 
 if __name__ == '__main__':
